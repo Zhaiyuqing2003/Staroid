@@ -1,0 +1,25 @@
+<html>
+    <body>
+        <script src ="jsgame_0.0.3.js"></script>
+        <link type = "text/css" href= "jsgame_0.0.3.css" rel = "stylesheet">
+        <script src = "jquery.js"></script>
+        <script>
+            $(window).ready(function(){
+                let canvas = $("#canvas").get(0)
+                canvas.height = window.innerHeight
+				canvas.width = window.innerWidth
+                let ctx = jsgame.createCanvas(canvas)
+                let sprite = new jsgame.sprite(ctx,[100,100])
+				sprite.has(["rect",0,0,100,100],0,false,"img/test.png")
+                opacity = 1
+                setInterval(function(){
+					ctx.screen.bgcolor()
+					sprite.translate([1,1])
+					sprite.draw()
+                },16)
+            })
+
+        </script>
+        <canvas id = "canvas" height="400px" width="400px"></canvas>
+    </body>
+</html>

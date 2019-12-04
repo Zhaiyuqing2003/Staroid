@@ -1,0 +1,18 @@
+.button{
+    position: relative;
+    top : 82vh;
+    left : 89.5vw;
+    margin-top: 2vh;
+    font-weight: 900;
+    font-size: 1.8vw;
+    width: 8vw;
+    height: 5vh;
+    font-family: "Bahnschrift";
+    display: block;
+    z-index: 10;
+}
+.canvas{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}

@@ -1,0 +1,167 @@
+<html>
+    <head>
+        <link type = "text/css" href="index2.css" rel = "stylesheet"> 
+        <script src ="jsgame_0.0.3.js"></script>
+        <script src = "jquery.js"></script>
+        <script>
+            // require node modules before loader.js comes in			// Monaco uses a custom amd loader that over-rides node's require.
+            var path = require('path');			// Keep a reference to node's require so we can restore it after executing the amd loader file.
+            var nodeRequire = global.require;
+        </script>
+    
+        <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+        <script>
+            // Save Monaco's amd require and restore Node's require
+            var amdRequire = global.require;
+            global.require = nodeRequire;
+            function uriFromPath(_path) {
+                var pathName = path.resolve(_path).replace(/\\/g, '/');
+                if (pathName.length > 0 && pathName.charAt(0) !== '/') {
+                    pathName = '/' + pathName;
+                }
+                return encodeURI('file://' + pathName);
+            }
+            let base = uriFromPath(path.join(__dirname, 'node_modules/monaco-editor/min'))
+            amdRequire.config({
+                baseUrl: base
+            });
+            amdRequire(['vs/editor/editor.main'], function() {
+                editor = monaco.editor.create(document.getElementsByClassName('textarea')[0], {
+                    value: [
+                        'function setup() {',
+                        '\tconsole.log("Hello world!");',
+                        '}',
+                    ].join('\n'),
+                    language: 'javascript',
+                    theme: "vs-dark"
+                });
+            });
+        </script>
+        <script>
+            let editor
+            let text 
+            let ctx
+            let init = false
+            let refresh
+            let keyCodes = []
+            let mouseover = false
+            let user = {}
+            let that
+            const { dialog } = require('electron').remote
+            const fs = require("fs")
+            function initiation(){
+                text = editor.getValue()
+                init = true
+                //let array = text.split('\n')
+                //console.log(array)
+            }  
+            function process(){
+                ctx.screen.bgcolor()
+                if (init){
+                    jsgame.sprites.clear()
+                    init = false
+                    that = user
+                    eval(text)
+                    user.setup()
+                    user.update()
+                }
+                try { user.update() }
+                catch {}
+                keyBoardHandler()
+                jsgame.sprites.draw()
+                setTimeout(process,16)
+            }
+            function keyBoardHandler(){
+                if (!mouseover){ return }
+                if (keyCodes[37]){
+                    ctx.screen.translate([-3,0])
+                }
+                if (keyCodes[38]){
+                    ctx.screen.translate([0,-3])
+                }
+                if (keyCodes[39]){
+                    ctx.screen.translate([3,0])
+                }
+                if (keyCodes[40]){
+                    ctx.screen.translate([0,3])
+                }
+            }
+            function mouseMoveHandler(event){
+                console.log(event)
+            }
+            $(window).ready(function(){
+                game()
+                let canvas = $(".canvas").get(0)
+                canvas.height = window.innerHeight
+                canvas.width = window.innerWidth * 0.6
+                ctx.resize(canvas.width,canvas.height)
+                $("#run").click(function(){
+                    initiation()
+                })
+                $(".canvas").mousemove(function(){
+                    mouseMoveHandler(event)
+                })
+                $(".canvas").mouseenter(function(){
+                    mouseover = true
+                })
+                $(".canvas").mouseleave(function(){
+                    mouseover = false
+                })
+                $(window).keydown(function(event){
+                    keyCodes[event.keyCode] = true
+                })
+                $(window).keyup(function(){ 
+                    keyCodes[event.keyCode] = false
+                })
+                $(".canvas").get(0).onmousewheel = function(e){
+                    if (e.ctrlKey){
+                        let scale = e.wheelDelta/3600 + 1
+                        ctx.screen.scaling(scale,scale,[e.offsetX,e.offsetY])// DO SCALE
+                    } else {
+                        let dy = e.wheelDeltaY / 10
+                        let dx = e.wheelDeltaX / 10
+                        ctx.screen.translate([dx,dy])
+                    }
+                }
+                $("#load").click(function(){
+                    dialog.showOpenDialog({ properties: ['openFile','multiSelections']})
+                    .then(function(filepath){
+                        //console.log(filepath)
+                        fs.readFile(filepath.filePaths[0],function(err,data){
+                            editor.setValue(data.toString())
+                        })
+                    })
+                })
+                $("#save").click(function(){
+                    dialog.showSaveDialog()
+                    .then(function(filepath){
+                        let val = editor.getValue()
+                        fs.writeFile(filepath.filePath,val,function(err){
+                            console.log(err)
+                        })
+                    })
+                })
+                $(window).resize(function(){
+                    editor.layout()
+                    let canvas = $(".canvas").get(0)
+                    canvas.height = window.innerHeight
+                    canvas.width = window.innerWidth * 0.6
+                    ctx.resize(canvas.width,canvas.height)
+                })
+            })
+            function game(){
+                ctx = jsgame.createCanvas($(".canvas").get(0))
+                setTimeout(function(){
+                    process()
+                },16)
+            }
+        </script>
+    </head>
+    <body>
+        <div class = "textarea"></div>
+        <button class = "button" id = "run">run</button>
+        <button class = "button" id = "load">load</button>
+        <button class = "button" id = "save">save</button>
+        <canvas class = "canvas"></canvas>
+    </body>
+</html>

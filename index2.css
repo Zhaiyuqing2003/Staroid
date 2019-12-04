@@ -1,0 +1,28 @@
+body{
+    width: 0px;
+    height: 0px;
+    margin: 0px;
+}
+.textarea{
+    position: absolute;
+    top:0px;
+    left:0px;
+    height: 100vh;
+    width: 40vw;
+}
+.button{
+    position: relative;
+    height : 5vh;
+    width: 8vw;
+    font-family: "Bahnschrift";
+    font-size: 1.8vw;
+    font-weight: 900;
+    margin-top: 2vh;
+    left: 28vw;
+    top: 75vh;
+}
+.canvas{
+    position: absolute;
+    left: 40vw;
+    top: 0vh;
+}

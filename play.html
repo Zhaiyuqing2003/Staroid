@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <link type = "text/css" href="play.css" rel="stylesheet">
+        <script src = "jsgame_0.0.3.js"></script>
+        <script src = "jquery.js"></script>
+        <script>
+            const { dialog } = require('electron').remote
+            const fs = require("fs")
+            let files = []
+            let users = [{},{}]
+            let game = {}
+            let that
+            let ctx 
+            let init
+            $(window).ready(function(){
+                game()
+                resize()
+                $("#load").click(function(){
+                    if (files.length >= 2){ return }
+                    dialog.showOpenDialog({ properties: ['openFile','multiSelections']})
+                    .then(function(filepath){
+                        //console.log(filepath)
+                        fs.readFile(filepath.filePaths[0],function(err,data){
+                            files.push(data.toString())
+                        })
+                    })
+                })
+                $("#run").click(function(){
+                    init = true
+                })
+                $(window).resize(function(){
+                    resize()
+                })
+            })
+            function game(){
+                ctx = jsgame.createCanvas($(".canvas").get(0))
+                setTimeout(function(){
+                    process()
+                },16)
+            }
+            function process(){
+                ctx.screen.bgcolor()
+                if (init){
+                    jsgame.sprites.clear()
+                    init = false
+                    getEval()
+                    for (let i in users){
+                        users[i].setup()
+                    }
+                }
+                for (let i in users){
+                    try { users[i].update() }
+                    catch {}
+                }
+                jsgame.sprites.draw()
+                setTimeout(process,16)
+            }
+            function getEval(){
+                that = users[0]
+                eval(files[0])
+                that = users[1]
+                eval(files[1])
+            }
+            function resize(){
+                let canvas = $(".canvas").get(0)
+                canvas.height = window.innerHeight
+                canvas.width = window.innerWidth
+                ctx.resize(canvas.width,canvas.height)
+            }
+        </script>
+    </head>
+    <body>
+        <button id = "run" class = "button">run</button>
+        <button id = "load" class = "button">load</button>
+        <canvas class = "canvas"></canvas>
+    </body>
+</html>

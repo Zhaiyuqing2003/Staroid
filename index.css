@@ -1,0 +1,22 @@
+body{
+    width: 0px;
+    height: 0px;
+    margin: 0px;
+}
+.textarea{
+    position: absolute;
+    top:0px;
+    left:0px;
+    resize: both;
+}
+.run{
+    position: absolute;
+    height : 30px;
+    width: 60px;
+    font-family: "Bahnschrift";
+    font-size: 16px;
+    font-weight: 900;
+}
+.canvas{
+    position: absolute;
+}
