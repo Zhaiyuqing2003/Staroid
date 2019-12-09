@@ -1,6 +1,4 @@
 that.setup = function() {
-	this["home"] = building.setHome(ctx,100,100)
-	this["ore"] = new resource(ctx,[300,300],"ore")
 	this["worker"] = []
 	this["melee"] = []
 }
@@ -8,7 +6,7 @@ that.update = function() {
 	let worker = this["worker"]
 	let home = this["home"]
 	let melee = this["melee"]
-	let ore = this["ore"]
+	let ore = context["resource"]["ore"][1]
 	if (worker.length < 3){
 		if (home.hasPlan()){
 			home.produce(function(_worker){

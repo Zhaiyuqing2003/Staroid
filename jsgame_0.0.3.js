@@ -1277,17 +1277,33 @@ let mapList = {
         "resource" : {
             "ore" : [
                 [10,10],
-                [1990,1990],
+                [690,690],
             ]
-        }
+        },
+        "home" : [
+            [100,100],
+            [600,600]
+        ]
     }
 }
 function mapInit(ctx,name){
-    let game_map = []
-    let map = mapList[name]
-    let resource = map["resource"]
-    let ore = resource["ore"]  
-    for (let i in ore){
-        game_map.push(new resource(ctx,ore[i],"ore"))
+    let game_map = {
+        "resource" : {
+
+        },
+        "home" : []
     }
+    let map = mapList[name]
+    let resources = map["resource"]
+    let home = map["home"]
+    for (let i in resources){
+        game_map["resource"][i] = []
+        for (let j in resources[i]){
+            game_map["resource"][i].push(new resource(ctx,resources[i][j],i))
+        }
+    }
+    for (let i in home){
+        game_map["home"].push(buildingList["home"].init(ctx,home[i]))
+    }
+    return game_map
 }
