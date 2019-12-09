@@ -8,7 +8,11 @@
             const fs = require("fs")
             let files = []
             let users = [{},{}]
-            let game = {}
+            let context = {
+                "resource" : {
+                    "ore" : []
+                }
+            }
             let that
             let ctx 
             let init
@@ -56,10 +60,13 @@
                 setTimeout(process,16)
             }
             function getEval(){
-                that = users[0]
-                eval(files[0])
-                that = users[1]
-                eval(files[1])
+                let map = mapInit(ctx,"default")
+                for (let i in files){
+                    that = users[i]
+                    eval(files[i])
+                    users[i].home = map.home[i]
+                }
+                context.resource = map.resource
             }
             function resize(){
                 let canvas = $(".canvas").get(0)
