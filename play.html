@@ -13,9 +13,9 @@
                     "ore" : []
                 }
             }
-            let that
             let ctx 
             let init
+            let enemy
             $(window).ready(function(){
                 game()
                 resize()
@@ -53,6 +53,7 @@
                     }
                 }
                 for (let i in users){
+                    enemy = enemyUpdate(i)
                     try { users[i].update() }
                     catch {}
                 }
@@ -61,10 +62,16 @@
             }
             function getEval(){
                 let map = mapInit(ctx,"default")
+                let that
                 for (let i in files){
                     that = users[i]
                     eval(files[i])
-                    users[i].home = map.home[i]
+                    users[i]["building"] = []
+                    map.home[i].user = users[i]
+                    users[i]["building"][0] = map.home[i]
+                    users[i]["unit"] = {}
+                    users[i]["unit"].worker = []
+                    users[i]["unit"].melee = []
                 }
                 context.resource = map.resource
             }
@@ -73,6 +80,14 @@
                 canvas.height = window.innerHeight
                 canvas.width = window.innerWidth
                 ctx.resize(canvas.width,canvas.height)
+            }
+            function enemyUpdate(user){
+                let enemyList = []
+                for (let i in users){
+                    if (i == user){ continue }
+                    enemyList.push(users[i])
+                }
+                return enemyList
             }
         </script>
     </head>

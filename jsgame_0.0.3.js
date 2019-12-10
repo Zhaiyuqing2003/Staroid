@@ -236,11 +236,12 @@ jsgame.sprite.prototype = {
         matrix = [...matrix,this.position.x,this.position.y]
         this.matrix = new numjs.matrix(...matrix)
     },
-    die : function(){
-        for (let i in this.childs){
-            util.remove(this.childs[i])
+    _die : function(){
+        let index = jsgame.sprites.spriteList.indexOf(this)
+        jsgame.sprites.spriteList.splice(index,1)
+        for (let child of this.childs){
+            child._die()
         }
-        util.remove(this)
     },
 
     // GRAPHICS OPERATION FUNCTIONS
@@ -717,12 +718,15 @@ var util = {
         }
         return new_obj
     },
-    remove : function(object){
-        let keys = Object.keys(object)
-        for (let i in keys){
-            delete object[keys[i]]
+    find : function(object,list){
+        let index 
+        for (let i in list){
+            if (list[i] == object){ 
+                index = i
+                break
+            } 
         }
-        object.status = false
+        return index
     }
 }
 
@@ -833,13 +837,13 @@ let buildingList = {
         has : [
             [["rect",0,0,100,100],"red",false]
         ],
-        init : function(canvas,pos){
-            return new building(canvas,pos,"home")
+        init : function(canvas,user,pos){
+            return new building(canvas,user,pos,"home")
         }
     }
 }
 class building extends jsgame.sprite{
-    constructor(canvas,pos,type){
+    constructor(canvas,user,pos,type){
         super(canvas,pos)
         this.type = type
         this.list = []
@@ -847,9 +851,16 @@ class building extends jsgame.sprite{
         this.health
         this.shield
         this.production
+        this.user = user
 
         this.init()
         this.getBox()
+    }
+    die(){
+        let list = this.user["building"][this.type]
+        let index = list.indexOf(this)
+        list.splice(index,1)
+        this._die()
     }
     init(){
         if (buildingList[this.type]){
@@ -901,10 +912,11 @@ class building extends jsgame.sprite{
                 current[1] -= this.production
                 this._processChange(1 - current[1]/current[2])
             } else {
-                let builder = unitList[current[0]].init(this.canvas,this.position)
+                let unit = unitList[current[0]].init(this.canvas,this.user,this.position)
                 this.list.shift()
                 this._processChange(0)
-                callback(builder)
+                this.user["unit"][current[0]].push(unit)
+                callback()
             }
             return true
         }
@@ -973,8 +985,8 @@ class building extends jsgame.sprite{
         this._inc("health",-inc)
     }
     
-    static setHome(canvas,x,y){
-        return buildingList["home"].init(canvas,[x,y])
+    static setHome(canvas,user,x,y){
+        return buildingList["home"].init(canvas,user,[x,y])
     }
 }
 let unitList = {
@@ -997,8 +1009,8 @@ let unitList = {
         has : [
             [["rect",0,0,20,20],"yellow",false]
         ],
-        init : function(canvas,pos){
-            return new worker(canvas,pos)
+        init : function(canvas,user,pos){
+            return new worker(canvas,user,pos)
         }
     },
     "melee" : {
@@ -1017,13 +1029,13 @@ let unitList = {
         has : [
             [["rect",0,0,20,20],"orange",false]
         ],
-        init : function(canvas,pos){
-            return new melee(canvas,pos)
+        init : function(canvas,user,pos){
+            return new melee(canvas,user,pos)
         }
     }
 }
 class unit extends jsgame.sprite{
-    constructor(canvas,pos,type){
+    constructor(canvas,user,pos,type){
         super(canvas,pos)
         this.type = type
         this.damage
@@ -1031,8 +1043,15 @@ class unit extends jsgame.sprite{
         this.health
         this.shield
         this.state = ["waiting"]
+        this.user = user 
         this.init(type)
         this.getBox()
+    }
+    die(){
+        let list = this.user["unit"][this.type]
+        let index = list.indexOf(this)
+        list.splice(index,1)
+        this._die()
     }
     init(type){
         if (unitList[type]){
@@ -1096,8 +1115,8 @@ class unit extends jsgame.sprite{
     }
 }
 class worker extends unit{
-    constructor(canvas,pos){
-        super(canvas,pos,"worker")
+    constructor(canvas,user,pos){
+        super(canvas,user,pos,"worker")
         //this.production = []
         this.route = []
         this.hasRoute = false
@@ -1170,8 +1189,8 @@ class worker extends unit{
     }
 }
 class melee extends unit{
-    constructor(canvas,pos){
-        super(canvas,pos,"melee")
+    constructor(canvas,user,pos){
+        super(canvas,user,pos,"melee")
         this.range
         this.meleeInit()
     }
@@ -1303,7 +1322,7 @@ function mapInit(ctx,name){
         }
     }
     for (let i in home){
-        game_map["home"].push(buildingList["home"].init(ctx,home[i]))
+        game_map["home"].push(buildingList["home"].init(ctx,undefined,home[i]))
     }
     return game_map
 }
