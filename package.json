@@ -11,7 +11,7 @@
   "author": "zhai",
   "license": "MIT",
   "devDependencies": {
-    "electron": "6.0.8",
+    "electron": "9.1.0",
     "electron-builder": "^22.1.0"
   },
   "dependencies": {
